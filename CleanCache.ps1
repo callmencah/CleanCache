@@ -1,6 +1,14 @@
-﻿# CleanCache.ps1
+# CleanCache.ps1
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+
+# Unicode Characters Helper (using character codes to stay 100% ASCII-compatible)
+$symBroom = [char]::ConvertFromUtf32(0x1F9F9)
+$symCheck = [char]::ConvertFromUtf32(0x2713)
+$symWarn = [char]::ConvertFromUtf32(0x26A0)
+$symRocket = [char]::ConvertFromUtf32(0x1F680)
+$symInfo = [char]::ConvertFromUtf32(0x2139)
+$symClose = [char]::ConvertFromUtf32(0x2715)
 
 # Color Palette (Catppuccin Mocha / Sleek Modern Dark Theme)
 $colorBg = [System.Drawing.Color]::FromArgb(30, 30, 46)        # #1e1e2e (Dark Background)
@@ -27,7 +35,7 @@ try {
 
 # Title Label
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = "🧹 Windows Cache Cleaner Pro"
+$titleLabel.Text = "$symBroom Windows Cache Cleaner Pro"
 $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $titleLabel.Location = New-Object System.Drawing.Point(20, 15)
 $titleLabel.Size = New-Object System.Drawing.Size(460, 35)
@@ -189,12 +197,12 @@ function Clear-BrowserCache {
                     if (Test-Path $cachePath) {
                         try {
                             Remove-Item -Path "$cachePath\*" -Recurse -Force -ErrorAction SilentlyContinue
-                            Write-Log "✓ Cache Firefox dibersihkan`n" $colorSuccess
+                            Write-Log "$symCheck Cache Firefox dibersihkan`n" $colorSuccess
                         } catch {
-                            Write-Log "⚠ Gagal membersihkan Cache Firefox`n" $colorWarning
+                            Write-Log "$symWarn Gagal membersihkan Cache Firefox`n" $colorWarning
                         }
                     } else {
-                        Write-Log "✓ Cache Firefox kosong`n" $colorSubtext
+                        Write-Log "$symCheck Cache Firefox kosong`n" $colorSubtext
                     }
                     
                     $sessionPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore.jsonlz4"
@@ -202,7 +210,7 @@ function Clear-BrowserCache {
                         try {
                             $backupPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore_backup.jsonlz4"
                             Copy-Item $sessionPath $backupPath -Force -ErrorAction SilentlyContinue
-                            Write-Log "✓ Session Firefox dibackup`n" $colorSuccess
+                            Write-Log "$symCheck Session Firefox dibackup`n" $colorSuccess
                         } catch {}
                     }
                 }
@@ -217,12 +225,12 @@ function Clear-BrowserCache {
                     Remove-Item -Path "$($paths.Path)\*" -Recurse -Force -ErrorAction SilentlyContinue
                     $filesAfter = (Get-ChildItem -Path $paths.Path -Recurse -ErrorAction SilentlyContinue).Count
                     if ($filesAfter -eq 0 -or $filesAfter -lt $filesBefore) {
-                        Write-Log "✓ Cache $browserName dibersihkan`n" $colorSuccess
+                        Write-Log "$symCheck Cache $browserName dibersihkan`n" $colorSuccess
                     } else {
-                        Write-Log "⚠ Cache $browserName tidak dapat dibersihkan sepenuhnya (tutup browser Anda)`n" $colorWarning
+                        Write-Log "$symWarn Cache $browserName tidak dapat dibersihkan sepenuhnya (tutup browser Anda)`n" $colorWarning
                     }
                 } catch {
-                    Write-Log "⚠ Gagal membersihkan Cache $browserName`n" $colorWarning
+                    Write-Log "$symWarn Gagal membersihkan Cache $browserName`n" $colorWarning
                 }
             }
             # Session storage
@@ -230,21 +238,21 @@ function Clear-BrowserCache {
                 $browserFound = $true
                 try {
                     Remove-Item -Path "$($paths.SessionPath)\*" -Recurse -Force -ErrorAction SilentlyContinue
-                    Write-Log "✓ Session Storage $browserName dibersihkan`n" $colorSuccess
+                    Write-Log "$symCheck Session Storage $browserName dibersihkan`n" $colorSuccess
                 } catch {
-                    Write-Log "⚠ Gagal membersihkan Session Storage $browserName`n" $colorWarning
+                    Write-Log "$symWarn Gagal membersihkan Session Storage $browserName`n" $colorWarning
                 }
             }
             # Login Data
             if (Test-Path $paths.LoginPath) {
                 $browserFound = $true
-                Write-Log "✓ Login Data $browserName diamankan`n" $colorSuccess
+                Write-Log "$symCheck Login Data $browserName diamankan`n" $colorSuccess
             }
         }
     }
     
     if (-not $browserFound) {
-        Write-Log "⚠ $browserName tidak ditemukan atau tidak aktif`n" $colorSubtext
+        Write-Log "$symWarn $browserName tidak ditemukan atau tidak aktif`n" $colorSubtext
     }
     Write-Log "`n"
 }
@@ -261,9 +269,9 @@ function Clear-SystemCache {
         if (Test-Path $cache) {
             try {
                 Remove-Item -Path "$cache\*" -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Log "✓ System Temp ($cache) dibersihkan`n" $colorSuccess
+                Write-Log "$symCheck System Temp ($cache) dibersihkan`n" $colorSuccess
             } catch {
-                Write-Log "⚠ Gagal membersihkan folder temp: $cache`n" $colorWarning
+                Write-Log "$symWarn Gagal membersihkan folder temp: $cache`n" $colorWarning
             }
         }
     }
@@ -271,17 +279,17 @@ function Clear-SystemCache {
     if (Test-Path "$env:WINDIR\Prefetch") {
         try {
             Remove-Item -Path "$env:WINDIR\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log "✓ Windows Prefetch dibersihkan`n" $colorSuccess
+            Write-Log "$symCheck Windows Prefetch dibersihkan`n" $colorSuccess
         } catch {
-            Write-Log "⚠ Gagal membersihkan Prefetch (butuh hak Administrator)`n" $colorWarning
+            Write-Log "$symWarn Gagal membersihkan Prefetch (butuh hak Administrator)`n" $colorWarning
         }
     }
     # Clear DNS Cache
     try {
         ipconfig /flushdns | Out-Null
-        Write-Log "✓ DNS Cache dibersihkan`n" $colorSuccess
+        Write-Log "$symCheck DNS Cache dibersihkan`n" $colorSuccess
     } catch {
-        Write-Log "⚠ Gagal membersihkan DNS Cache`n" $colorWarning
+        Write-Log "$symWarn Gagal membersihkan DNS Cache`n" $colorWarning
     }
     Write-Log "`n"
 }
@@ -289,7 +297,7 @@ function Clear-SystemCache {
 # Bottom Buttons Area
 # Clear Button
 $clearButton = New-Object System.Windows.Forms.Button
-$clearButton.Text = "🚀 Bersihkan Cache"
+$clearButton.Text = "$symRocket Bersihkan Cache"
 $clearButton.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
 $clearButton.Location = New-Object System.Drawing.Point(20, 490)
 $clearButton.Size = New-Object System.Drawing.Size(200, 45)
@@ -301,7 +309,7 @@ $form.Controls.Add($clearButton)
 
 # About Button
 $aboutButton = New-Object System.Windows.Forms.Button
-$aboutButton.Text = "ℹ About"
+$aboutButton.Text = "$symInfo About"
 $aboutButton.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $aboutButton.Location = New-Object System.Drawing.Point(235, 490)
 $aboutButton.Size = New-Object System.Drawing.Size(95, 45)
@@ -313,7 +321,7 @@ $form.Controls.Add($aboutButton)
 
 # Close Button
 $closeButton = New-Object System.Windows.Forms.Button
-$closeButton.Text = "✕ Tutup"
+$closeButton.Text = "$symClose Tutup"
 $closeButton.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
 $closeButton.Location = New-Object System.Drawing.Point(345, 490)
 $closeButton.Size = New-Object System.Drawing.Size(120, 45)
@@ -357,7 +365,7 @@ $clearButton.Add_Click({
     Clear-SystemCache
     
     Write-Log "=== PEMBERSIHAN SELESAI ===" $colorSuccess
-    $statusLabel.Text = "Status: Selesai ✓"
+    $statusLabel.Text = "Status: Selesai $symCheck"
     $statusLabel.ForeColor = $colorSuccess
 })
 
