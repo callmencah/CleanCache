@@ -17,29 +17,14 @@ $colorConsoleBg = [System.Drawing.Color]::FromArgb(9, 9, 11)   # #09090b (Zinc-9
 # Form Utama
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Cache Cleaner Windows Pro"
-$form.Size = New-Object System.Drawing.Size(500, 630)
+$form.Size = New-Object System.Drawing.Size(500, 650)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = $colorBg
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
 $form.MaximizeBox = $false
 try {
-    $iconPath = Join-Path $PSScriptRoot "app_icon.ico"
-    if (-not (Test-Path $iconPath)) {
-        $iconPath = Join-Path $env:TEMP "app_icon.ico"
-        if (-not (Test-Path $iconPath)) {
-            Invoke-RestMethod -Uri "https://raw.githubusercontent.com/callmencah/CleanCache/main/app_icon.ico" -OutFile $iconPath -ErrorAction SilentlyContinue
-        }
-    }
-    if (Test-Path $iconPath) {
-        $form.Icon = New-Object System.Drawing.Icon($iconPath)
-    } else {
-        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
-    }
-} catch {
-    try {
-        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
-    } catch {}
-}
+    $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
+} catch {}
 
 # Title Label
 $titleLabel = New-Object System.Windows.Forms.Label
@@ -64,14 +49,14 @@ $form.Controls.Add($infoLabel)
 # Card Border Panel
 $cardBorder = New-Object System.Windows.Forms.Panel
 $cardBorder.Location = New-Object System.Drawing.Point(20, 80)
-$cardBorder.Size = New-Object System.Drawing.Size(445, 140)
+$cardBorder.Size = New-Object System.Drawing.Size(445, 160)
 $cardBorder.BackColor = $colorBorder
 $form.Controls.Add($cardBorder)
 
 # Card Panel
 $cardPanel = New-Object System.Windows.Forms.Panel
 $cardPanel.Location = New-Object System.Drawing.Point(1, 1)
-$cardPanel.Size = New-Object System.Drawing.Size(443, 138)
+$cardPanel.Size = New-Object System.Drawing.Size(443, 158)
 $cardPanel.BackColor = $colorCard
 $cardBorder.Controls.Add($cardPanel)
 
@@ -105,9 +90,9 @@ $browsers = @{
     }
 }
 
-# Kolom 1 (Chrome, Edge, Firefox)
+# Kolom 1 (Chrome, Edge, Firefox, Opera)
 $yOffset = 15
-$c1 = @("Chrome", "Edge", "Firefox")
+$c1 = @("Chrome", "Edge", "Firefox", "Opera")
 foreach ($browser in $c1) {
     $checkbox = New-Object System.Windows.Forms.CheckBox
     $checkbox.Text = $browser
@@ -121,27 +106,32 @@ foreach ($browser in $c1) {
     $yOffset += 35
 }
 
-# Kolom 2 (Opera, Brave, Pilih Semua)
-$yOffset = 15
-$c2 = @("Opera", "Brave")
-foreach ($browser in $c2) {
-    $checkbox = New-Object System.Windows.Forms.CheckBox
-    $checkbox.Text = $browser
-    $checkbox.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
-    $checkbox.Location = New-Object System.Drawing.Point(230, $yOffset)
-    $checkbox.Size = New-Object System.Drawing.Size(150, 30)
-    $checkbox.Checked = $true
-    $checkbox.ForeColor = $colorText
-    $cardPanel.Controls.Add($checkbox)
-    $checkboxes[$browser] = $checkbox
-    $yOffset += 35
-}
+# Kolom 2 (Brave, Recycle Bin, Pilih Semua)
+$checkboxBrave = New-Object System.Windows.Forms.CheckBox
+$checkboxBrave.Text = "Brave"
+$checkboxBrave.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
+$checkboxBrave.Location = New-Object System.Drawing.Point(230, 15)
+$checkboxBrave.Size = New-Object System.Drawing.Size(150, 30)
+$checkboxBrave.Checked = $true
+$checkboxBrave.ForeColor = $colorText
+$cardPanel.Controls.Add($checkboxBrave)
+$checkboxes["Brave"] = $checkboxBrave
+
+$checkboxRB = New-Object System.Windows.Forms.CheckBox
+$checkboxRB.Text = "Recycle Bin"
+$checkboxRB.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
+$checkboxRB.Location = New-Object System.Drawing.Point(230, 50)
+$checkboxRB.Size = New-Object System.Drawing.Size(150, 30)
+$checkboxRB.Checked = $true
+$checkboxRB.ForeColor = $colorText
+$cardPanel.Controls.Add($checkboxRB)
+$checkboxes["Recycle Bin"] = $checkboxRB
 
 # Select All Checkbox
 $selectAll = New-Object System.Windows.Forms.CheckBox
 $selectAll.Text = "Pilih Semua"
 $selectAll.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
-$selectAll.Location = New-Object System.Drawing.Point(230, 85)
+$selectAll.Location = New-Object System.Drawing.Point(230, 120)
 $selectAll.Size = New-Object System.Drawing.Size(150, 30)
 $selectAll.Checked = $true
 $selectAll.ForeColor = $colorAccent
@@ -157,14 +147,14 @@ $selectAll.Add_CheckedChanged({
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = "Status: Siap"
 $statusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
-$statusLabel.Location = New-Object System.Drawing.Point(20, 235)
+$statusLabel.Location = New-Object System.Drawing.Point(20, 255)
 $statusLabel.Size = New-Object System.Drawing.Size(460, 20)
 $statusLabel.ForeColor = $colorSuccess
 $form.Controls.Add($statusLabel)
 
 # Console Border Panel
 $consoleBorder = New-Object System.Windows.Forms.Panel
-$consoleBorder.Location = New-Object System.Drawing.Point(20, 260)
+$consoleBorder.Location = New-Object System.Drawing.Point(20, 280)
 $consoleBorder.Size = New-Object System.Drawing.Size(445, 210)
 $consoleBorder.BackColor = $colorBorder
 $form.Controls.Add($consoleBorder)
@@ -361,12 +351,33 @@ function Clear-SystemCache {
     return $cleanedSize
 }
 
+# Clear Recycle Bin function
+function Clear-RecycleBinCustom {
+    Write-Log "=== Membersihkan Recycle Bin ===`n" $colorAccent
+    $cleanedSize = [double]0
+    try {
+        $sh = New-Object -ComObject Shell.Application
+        $rb = $sh.NameSpace(10)
+        if ($rb) {
+            foreach ($item in $rb.Items()) {
+                $cleanedSize += $item.Size
+            }
+        }
+        Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+        Write-Log "Recycle Bin dibersihkan ($(Format-Size $cleanedSize))`n" $colorSuccess
+    } catch {
+        Write-Log "Gagal membersihkan Recycle Bin`n" $colorWarning
+    }
+    Write-Log "`n"
+    return $cleanedSize
+}
+
 # Bottom Buttons Area
 # Clear Button
 $clearButton = New-Object System.Windows.Forms.Button
 $clearButton.Text = "Bersihkan Cache"
 $clearButton.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
-$clearButton.Location = New-Object System.Drawing.Point(20, 490)
+$clearButton.Location = New-Object System.Drawing.Point(20, 510)
 $clearButton.Size = New-Object System.Drawing.Size(220, 45)
 $clearButton.BackColor = $colorAccent
 $clearButton.ForeColor = [System.Drawing.Color]::White
@@ -378,7 +389,7 @@ $form.Controls.Add($clearButton)
 $aboutButton = New-Object System.Windows.Forms.Button
 $aboutButton.Text = "About"
 $aboutButton.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$aboutButton.Location = New-Object System.Drawing.Point(250, 490)
+$aboutButton.Location = New-Object System.Drawing.Point(250, 510)
 $aboutButton.Size = New-Object System.Drawing.Size(100, 45)
 $aboutButton.BackColor = $colorBorder
 $aboutButton.ForeColor = $colorText
@@ -390,7 +401,7 @@ $form.Controls.Add($aboutButton)
 $closeButton = New-Object System.Windows.Forms.Button
 $closeButton.Text = "Tutup"
 $closeButton.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$closeButton.Location = New-Object System.Drawing.Point(360, 490)
+$closeButton.Location = New-Object System.Drawing.Point(360, 510)
 $closeButton.Size = New-Object System.Drawing.Size(100, 45)
 $closeButton.BackColor = $colorError
 $closeButton.ForeColor = [System.Drawing.Color]::White
@@ -417,7 +428,7 @@ $clearButton.Add_Click({
     $statusLabel.ForeColor = $colorWarning
     
     $selectedBrowsers = @()
-    foreach ($browser in $checkboxes.Keys) {
+    foreach ($browser in $browsers.Keys) {
         if ($checkboxes[$browser].Checked) {
             $selectedBrowsers += $browser
         }
@@ -433,6 +444,11 @@ $clearButton.Add_Click({
     # Clear system
     $totalCleaned += Clear-SystemCache
     
+    # Clear Recycle Bin if selected
+    if ($checkboxes["Recycle Bin"].Checked) {
+        $totalCleaned += Clear-RecycleBinCustom
+    }
+    
     Write-Log "=== PEMBERSIHAN SELESAI ===`n" $colorSuccess
     Write-Log "Total Ruang Dibebaskan: $(Format-Size $totalCleaned)`n" $colorSuccess
     $statusLabel.Text = "Status: Selesai (Dibebaskan: $(Format-Size $totalCleaned))"
@@ -445,7 +461,7 @@ $closeButton.Add_Click({
 
 $aboutButton.Add_Click({
     [System.Windows.Forms.MessageBox]::Show(
-        "Windows Cache Cleaner Pro v1.1`n`nFitur:`n- Membersihkan cache 5 browser populer`n- Membersihkan system temp & Prefetch`n- Tidak menghapus session login Anda`n`nMade by Ncah`nRepo: https://github.com/callmencah/CleanCache",
+        "Windows Cache Cleaner Pro v1.1`n`nFitur:`n- Membersihkan cache 5 browser populer`n- Membersihkan system temp & Prefetch`n- Membersihkan Recycle Bin`n- Tidak menghapus session login Anda`n`nMade by Ncah`nRepo: https://github.com/callmencah/CleanCache",
         "About Cache Cleaner",
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Information
@@ -455,7 +471,7 @@ $aboutButton.Add_Click({
 # Credit Link Label
 $linkLabel = New-Object System.Windows.Forms.LinkLabel
 $linkLabel.Text = "Made by Ncah | github.com/callmencah/CleanCache"
-$linkLabel.Location = New-Object System.Drawing.Point(20, 560)
+$linkLabel.Location = New-Object System.Drawing.Point(20, 580)
 $linkLabel.Size = New-Object System.Drawing.Size(445, 20)
 $linkLabel.TextAlign = "MiddleCenter"
 $linkLabel.ForeColor = $colorSubtext
@@ -482,6 +498,26 @@ $linkLabel.AutoSize = $true
 $form.Add_Load({
     $linkLabel.Left = ($form.ClientSize.Width - $linkLabel.Width) / 2
 })
+
+# Custom Icon loading with remote fallback
+try {
+    $iconPath = Join-Path $PSScriptRoot "app_icon.ico"
+    if (-not (Test-Path $iconPath)) {
+        $iconPath = Join-Path $env:TEMP "app_icon.ico"
+        if (-not (Test-Path $iconPath)) {
+            Invoke-RestMethod -Uri "https://raw.githubusercontent.com/callmencah/CleanCache/main/app_icon.ico" -OutFile $iconPath -ErrorAction SilentlyContinue
+        }
+    }
+    if (Test-Path $iconPath) {
+        $form.Icon = New-Object System.Drawing.Icon($iconPath)
+    } else {
+        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
+    }
+} catch {
+    try {
+        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
+    } catch {}
+}
 
 # Show Dialog
 $form.ShowDialog()
