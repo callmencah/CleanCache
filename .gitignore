@@ -1,0 +1,20 @@
+# PowerShell
+*.ps1.bak
+*.ps1.log
+
+# Windows
+Thumbs.db
+desktop.ini
+*.tmp
+*.temp
+
+# Visual Studio
+.vs/
+.vscode/
+
+# User files
+*.user
+*.suo
+
+# Logs
+*.log
