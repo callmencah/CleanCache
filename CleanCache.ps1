@@ -23,8 +23,23 @@ $form.BackColor = $colorBg
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
 $form.MaximizeBox = $false
 try {
-    $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
-} catch {}
+    $iconPath = Join-Path $PSScriptRoot "app_icon.ico"
+    if (-not (Test-Path $iconPath)) {
+        $iconPath = Join-Path $env:TEMP "app_icon.ico"
+        if (-not (Test-Path $iconPath)) {
+            Invoke-RestMethod -Uri "https://raw.githubusercontent.com/callmencah/CleanCache/main/app_icon.ico" -OutFile $iconPath -ErrorAction SilentlyContinue
+        }
+    }
+    if (Test-Path $iconPath) {
+        $form.Icon = New-Object System.Drawing.Icon($iconPath)
+    } else {
+        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
+    }
+} catch {
+    try {
+        $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon((Get-Command powershell).Path)
+    } catch {}
+}
 
 # Title Label
 $titleLabel = New-Object System.Windows.Forms.Label

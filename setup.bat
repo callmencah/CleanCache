@@ -25,7 +25,7 @@ set SCRIPT_PATH=%~dp0CleanCache.ps1
 set SHORTCUT_PATH=%USERPROFILE%\Desktop\Cache Cleaner.lnk
 
 echo [INFO] Membuat shortcut di desktop...
-powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = 'powershell.exe'; $Shortcut.Arguments = '-ExecutionPolicy Bypass -File ""%SCRIPT_PATH%""'; $Shortcut.WorkingDirectory = '%~dp0'; $Shortcut.IconLocation = 'shell32.dll,14'; $Shortcut.Save()"
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = 'powershell.exe'; $Shortcut.Arguments = '-ExecutionPolicy Bypass -File ""%SCRIPT_PATH%""'; $Shortcut.WorkingDirectory = '%~dp0'; $Shortcut.IconLocation = '%~dp0app_icon.ico'; $Shortcut.Save()"
 
 echo [SUCCESS] Shortcut dibuat di desktop
 echo.
