@@ -2,29 +2,22 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-# Unicode Characters Helper (using character codes to stay 100% ASCII-compatible)
-$symBroom = [char]::ConvertFromUtf32(0x1F9F9)
-$symCheck = [char]::ConvertFromUtf32(0x2713)
-$symWarn = [char]::ConvertFromUtf32(0x26A0)
-$symRocket = [char]::ConvertFromUtf32(0x1F680)
-$symInfo = [char]::ConvertFromUtf32(0x2139)
-$symClose = [char]::ConvertFromUtf32(0x2715)
-
-# Color Palette (Catppuccin Mocha / Sleek Modern Dark Theme)
-$colorBg = [System.Drawing.Color]::FromArgb(30, 30, 46)        # #1e1e2e (Dark Background)
-$colorPanel = [System.Drawing.Color]::FromArgb(49, 50, 68)     # #313244 (Panel/Surface)
-$colorText = [System.Drawing.Color]::FromArgb(205, 214, 244)   # #cdd6f4 (Text)
-$colorSubtext = [System.Drawing.Color]::FromArgb(166, 173, 200)# #a6adc8 (Subtext)
-$colorAccent = [System.Drawing.Color]::FromArgb(137, 180, 250)  # #89b4fa (Blue Accent)
-$colorSuccess = [System.Drawing.Color]::FromArgb(166, 227, 161) # #a6e3a1 (Green)
-$colorWarning = [System.Drawing.Color]::FromArgb(249, 226, 175) # #f9e2af (Yellow/Orange)
-$colorError = [System.Drawing.Color]::FromArgb(243, 139, 168)   # #f38ba8 (Red/Close)
-$colorConsoleBg = [System.Drawing.Color]::FromArgb(17, 17, 27)  # #11111b (Console Black)
+# Color Palette (Modern Clean Zinc Dark Theme)
+$colorBg = [System.Drawing.Color]::FromArgb(9, 9, 11)          # #09090b (Zinc-950)
+$colorCard = [System.Drawing.Color]::FromArgb(24, 24, 27)      # #18181b (Zinc-900)
+$colorBorder = [System.Drawing.Color]::FromArgb(39, 39, 42)    # #27272a (Zinc-800)
+$colorText = [System.Drawing.Color]::FromArgb(250, 250, 250)   # #fafafa (Zinc-50)
+$colorSubtext = [System.Drawing.Color]::FromArgb(113, 113, 122)# #71717a (Zinc-500)
+$colorAccent = [System.Drawing.Color]::FromArgb(59, 130, 246)  # #3b82f6 (Blue-500)
+$colorSuccess = [System.Drawing.Color]::FromArgb(34, 197, 94)  # #22c55e (Green-500)
+$colorWarning = [System.Drawing.Color]::FromArgb(234, 179, 8)  # #eab308 (Yellow-500)
+$colorError = [System.Drawing.Color]::FromArgb(239, 68, 68)    # #ef4444 (Red-500)
+$colorConsoleBg = [System.Drawing.Color]::FromArgb(9, 9, 11)   # #09090b (Zinc-950)
 
 # Form Utama
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Cache Cleaner Windows Pro"
-$form.Size = New-Object System.Drawing.Size(500, 620)
+$form.Size = New-Object System.Drawing.Size(500, 630)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = $colorBg
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
@@ -35,12 +28,12 @@ try {
 
 # Title Label
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = "$symBroom Windows Cache Cleaner Pro"
+$titleLabel.Text = "Windows Cache Cleaner Pro"
 $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $titleLabel.Location = New-Object System.Drawing.Point(20, 15)
 $titleLabel.Size = New-Object System.Drawing.Size(460, 35)
 $titleLabel.TextAlign = "MiddleCenter"
-$titleLabel.ForeColor = $colorAccent
+$titleLabel.ForeColor = $colorText
 $form.Controls.Add($titleLabel)
 
 # Info Label
@@ -53,15 +46,19 @@ $infoLabel.TextAlign = "MiddleCenter"
 $infoLabel.ForeColor = $colorSubtext
 $form.Controls.Add($infoLabel)
 
-# Group Box Browser (Panel Custom)
-$groupPanel = New-Object System.Windows.Forms.GroupBox
-$groupPanel.Text = " Pilihan Pembersihan Browser "
-$groupPanel.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
-$groupPanel.Location = New-Object System.Drawing.Point(20, 80)
-$groupPanel.Size = New-Object System.Drawing.Size(445, 150)
-$groupPanel.ForeColor = $colorAccent
-$groupPanel.BackColor = $colorBg
-$form.Controls.Add($groupPanel)
+# Card Border Panel
+$cardBorder = New-Object System.Windows.Forms.Panel
+$cardBorder.Location = New-Object System.Drawing.Point(20, 80)
+$cardBorder.Size = New-Object System.Drawing.Size(445, 140)
+$cardBorder.BackColor = $colorBorder
+$form.Controls.Add($cardBorder)
+
+# Card Panel
+$cardPanel = New-Object System.Windows.Forms.Panel
+$cardPanel.Location = New-Object System.Drawing.Point(1, 1)
+$cardPanel.Size = New-Object System.Drawing.Size(443, 138)
+$cardPanel.BackColor = $colorCard
+$cardBorder.Controls.Add($cardPanel)
 
 # Checkbox untuk setiap browser
 $checkboxes = @{}
@@ -77,7 +74,6 @@ $browsers = @{
         LoginPath = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Login Data"
     }
     "Firefox" = @{
-        # Firefox cache path handled inside function (LOCALAPPDATA vs APPDATA)
         Path = "$env:LOCALAPPDATA\Mozilla\Firefox\Profiles" 
         SessionPath = "$env:APPDATA\Mozilla\Firefox\Profiles"
         LoginPath = "$env:APPDATA\Mozilla\Firefox\Profiles"
@@ -95,33 +91,33 @@ $browsers = @{
 }
 
 # Kolom 1 (Chrome, Edge, Firefox)
-$yOffset = 30
+$yOffset = 15
 $c1 = @("Chrome", "Edge", "Firefox")
 foreach ($browser in $c1) {
     $checkbox = New-Object System.Windows.Forms.CheckBox
     $checkbox.Text = $browser
-    $checkbox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $checkbox.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
     $checkbox.Location = New-Object System.Drawing.Point(25, $yOffset)
     $checkbox.Size = New-Object System.Drawing.Size(150, 30)
     $checkbox.Checked = $true
     $checkbox.ForeColor = $colorText
-    $groupPanel.Controls.Add($checkbox)
+    $cardPanel.Controls.Add($checkbox)
     $checkboxes[$browser] = $checkbox
     $yOffset += 35
 }
 
 # Kolom 2 (Opera, Brave, Pilih Semua)
-$yOffset = 30
+$yOffset = 15
 $c2 = @("Opera", "Brave")
 foreach ($browser in $c2) {
     $checkbox = New-Object System.Windows.Forms.CheckBox
     $checkbox.Text = $browser
-    $checkbox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $checkbox.Font = New-Object System.Drawing.Font("Segoe UI", 9.5)
     $checkbox.Location = New-Object System.Drawing.Point(230, $yOffset)
     $checkbox.Size = New-Object System.Drawing.Size(150, 30)
     $checkbox.Checked = $true
     $checkbox.ForeColor = $colorText
-    $groupPanel.Controls.Add($checkbox)
+    $cardPanel.Controls.Add($checkbox)
     $checkboxes[$browser] = $checkbox
     $yOffset += 35
 }
@@ -129,12 +125,12 @@ foreach ($browser in $c2) {
 # Select All Checkbox
 $selectAll = New-Object System.Windows.Forms.CheckBox
 $selectAll.Text = "Pilih Semua"
-$selectAll.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$selectAll.Location = New-Object System.Drawing.Point(230, 100)
+$selectAll.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$selectAll.Location = New-Object System.Drawing.Point(230, 85)
 $selectAll.Size = New-Object System.Drawing.Size(150, 30)
 $selectAll.Checked = $true
 $selectAll.ForeColor = $colorAccent
-$groupPanel.Controls.Add($selectAll)
+$cardPanel.Controls.Add($selectAll)
 
 $selectAll.Add_CheckedChanged({
     foreach ($cb in $checkboxes.Values) {
@@ -145,22 +141,29 @@ $selectAll.Add_CheckedChanged({
 # Status Label
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = "Status: Siap"
-$statusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$statusLabel.Location = New-Object System.Drawing.Point(20, 240)
+$statusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9.5, [System.Drawing.FontStyle]::Bold)
+$statusLabel.Location = New-Object System.Drawing.Point(20, 235)
 $statusLabel.Size = New-Object System.Drawing.Size(460, 20)
 $statusLabel.ForeColor = $colorSuccess
 $form.Controls.Add($statusLabel)
 
+# Console Border Panel
+$consoleBorder = New-Object System.Windows.Forms.Panel
+$consoleBorder.Location = New-Object System.Drawing.Point(20, 260)
+$consoleBorder.Size = New-Object System.Drawing.Size(445, 210)
+$consoleBorder.BackColor = $colorBorder
+$form.Controls.Add($consoleBorder)
+
 # Log RichTextBox
 $logBox = New-Object System.Windows.Forms.RichTextBox
-$logBox.Location = New-Object System.Drawing.Point(20, 265)
-$logBox.Size = New-Object System.Drawing.Size(445, 200)
+$logBox.Location = New-Object System.Drawing.Point(1, 1)
+$logBox.Size = New-Object System.Drawing.Size(443, 208)
 $logBox.ReadOnly = $true
 $logBox.BackColor = $colorConsoleBg
 $logBox.ForeColor = $colorText
 $logBox.Font = New-Object System.Drawing.Font("Consolas", 9.5)
 $logBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
-$form.Controls.Add($logBox)
+$consoleBorder.Controls.Add($logBox)
 
 # Log Helper
 function Write-Log {
@@ -197,12 +200,12 @@ function Clear-BrowserCache {
                     if (Test-Path $cachePath) {
                         try {
                             Remove-Item -Path "$cachePath\*" -Recurse -Force -ErrorAction SilentlyContinue
-                            Write-Log "$symCheck Cache Firefox dibersihkan`n" $colorSuccess
+                            Write-Log "Cache Firefox dibersihkan`n" $colorSuccess
                         } catch {
-                            Write-Log "$symWarn Gagal membersihkan Cache Firefox`n" $colorWarning
+                            Write-Log "Gagal membersihkan Cache Firefox`n" $colorWarning
                         }
                     } else {
-                        Write-Log "$symCheck Cache Firefox kosong`n" $colorSubtext
+                        Write-Log "Cache Firefox kosong`n" $colorSubtext
                     }
                     
                     $sessionPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore.jsonlz4"
@@ -210,7 +213,7 @@ function Clear-BrowserCache {
                         try {
                             $backupPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore_backup.jsonlz4"
                             Copy-Item $sessionPath $backupPath -Force -ErrorAction SilentlyContinue
-                            Write-Log "$symCheck Session Firefox dibackup`n" $colorSuccess
+                            Write-Log "Session Firefox dibackup`n" $colorSuccess
                         } catch {}
                     }
                 }
@@ -225,12 +228,12 @@ function Clear-BrowserCache {
                     Remove-Item -Path "$($paths.Path)\*" -Recurse -Force -ErrorAction SilentlyContinue
                     $filesAfter = (Get-ChildItem -Path $paths.Path -Recurse -ErrorAction SilentlyContinue).Count
                     if ($filesAfter -eq 0 -or $filesAfter -lt $filesBefore) {
-                        Write-Log "$symCheck Cache $browserName dibersihkan`n" $colorSuccess
+                        Write-Log "Cache $browserName dibersihkan`n" $colorSuccess
                     } else {
-                        Write-Log "$symWarn Cache $browserName tidak dapat dibersihkan sepenuhnya (tutup browser Anda)`n" $colorWarning
+                        Write-Log "Cache $browserName tidak dapat dibersihkan sepenuhnya (tutup browser Anda)`n" $colorWarning
                     }
                 } catch {
-                    Write-Log "$symWarn Gagal membersihkan Cache $browserName`n" $colorWarning
+                    Write-Log "Gagal membersihkan Cache $browserName`n" $colorWarning
                 }
             }
             # Session storage
@@ -238,21 +241,21 @@ function Clear-BrowserCache {
                 $browserFound = $true
                 try {
                     Remove-Item -Path "$($paths.SessionPath)\*" -Recurse -Force -ErrorAction SilentlyContinue
-                    Write-Log "$symCheck Session Storage $browserName dibersihkan`n" $colorSuccess
+                    Write-Log "Session Storage $browserName dibersihkan`n" $colorSuccess
                 } catch {
-                    Write-Log "$symWarn Gagal membersihkan Session Storage $browserName`n" $colorWarning
+                    Write-Log "Gagal membersihkan Session Storage $browserName`n" $colorWarning
                 }
             }
             # Login Data
             if (Test-Path $paths.LoginPath) {
                 $browserFound = $true
-                Write-Log "$symCheck Login Data $browserName diamankan`n" $colorSuccess
+                Write-Log "Login Data $browserName diamankan`n" $colorSuccess
             }
         }
     }
     
     if (-not $browserFound) {
-        Write-Log "$symWarn $browserName tidak ditemukan atau tidak aktif`n" $colorSubtext
+        Write-Log "$browserName tidak ditemukan atau tidak aktif`n" $colorSubtext
     }
     Write-Log "`n"
 }
@@ -269,9 +272,9 @@ function Clear-SystemCache {
         if (Test-Path $cache) {
             try {
                 Remove-Item -Path "$cache\*" -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Log "$symCheck System Temp ($cache) dibersihkan`n" $colorSuccess
+                Write-Log "System Temp ($cache) dibersihkan`n" $colorSuccess
             } catch {
-                Write-Log "$symWarn Gagal membersihkan folder temp: $cache`n" $colorWarning
+                Write-Log "Gagal membersihkan folder temp: $cache`n" $colorWarning
             }
         }
     }
@@ -279,17 +282,17 @@ function Clear-SystemCache {
     if (Test-Path "$env:WINDIR\Prefetch") {
         try {
             Remove-Item -Path "$env:WINDIR\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log "$symCheck Windows Prefetch dibersihkan`n" $colorSuccess
+            Write-Log "Windows Prefetch dibersihkan`n" $colorSuccess
         } catch {
-            Write-Log "$symWarn Gagal membersihkan Prefetch (butuh hak Administrator)`n" $colorWarning
+            Write-Log "Gagal membersihkan Prefetch (butuh hak Administrator)`n" $colorWarning
         }
     }
     # Clear DNS Cache
     try {
         ipconfig /flushdns | Out-Null
-        Write-Log "$symCheck DNS Cache dibersihkan`n" $colorSuccess
+        Write-Log "DNS Cache dibersihkan`n" $colorSuccess
     } catch {
-        Write-Log "$symWarn Gagal membersihkan DNS Cache`n" $colorWarning
+        Write-Log "Gagal membersihkan DNS Cache`n" $colorWarning
     }
     Write-Log "`n"
 }
@@ -297,23 +300,23 @@ function Clear-SystemCache {
 # Bottom Buttons Area
 # Clear Button
 $clearButton = New-Object System.Windows.Forms.Button
-$clearButton.Text = "$symRocket Bersihkan Cache"
+$clearButton.Text = "Bersihkan Cache"
 $clearButton.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
 $clearButton.Location = New-Object System.Drawing.Point(20, 490)
-$clearButton.Size = New-Object System.Drawing.Size(200, 45)
+$clearButton.Size = New-Object System.Drawing.Size(220, 45)
 $clearButton.BackColor = $colorAccent
-$clearButton.ForeColor = $colorBg
+$clearButton.ForeColor = [System.Drawing.Color]::White
 $clearButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $clearButton.FlatAppearance.BorderSize = 0
 $form.Controls.Add($clearButton)
 
 # About Button
 $aboutButton = New-Object System.Windows.Forms.Button
-$aboutButton.Text = "$symInfo About"
+$aboutButton.Text = "About"
 $aboutButton.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$aboutButton.Location = New-Object System.Drawing.Point(235, 490)
-$aboutButton.Size = New-Object System.Drawing.Size(95, 45)
-$aboutButton.BackColor = $colorPanel
+$aboutButton.Location = New-Object System.Drawing.Point(250, 490)
+$aboutButton.Size = New-Object System.Drawing.Size(100, 45)
+$aboutButton.BackColor = $colorBorder
 $aboutButton.ForeColor = $colorText
 $aboutButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $aboutButton.FlatAppearance.BorderSize = 0
@@ -321,24 +324,24 @@ $form.Controls.Add($aboutButton)
 
 # Close Button
 $closeButton = New-Object System.Windows.Forms.Button
-$closeButton.Text = "$symClose Tutup"
+$closeButton.Text = "Tutup"
 $closeButton.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$closeButton.Location = New-Object System.Drawing.Point(345, 490)
-$closeButton.Size = New-Object System.Drawing.Size(120, 45)
+$closeButton.Location = New-Object System.Drawing.Point(360, 490)
+$closeButton.Size = New-Object System.Drawing.Size(100, 45)
 $closeButton.BackColor = $colorError
-$closeButton.ForeColor = $colorBg
+$closeButton.ForeColor = [System.Drawing.Color]::White
 $closeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $closeButton.FlatAppearance.BorderSize = 0
 $form.Controls.Add($closeButton)
 
 # Add Hover effects
-$clearButton.Add_MouseEnter({ $clearButton.BackColor = [System.Drawing.Color]::FromArgb(166, 227, 161) }) # Green hover
+$clearButton.Add_MouseEnter({ $clearButton.BackColor = [System.Drawing.Color]::FromArgb(29, 78, 216) }) # Darker blue
 $clearButton.Add_MouseLeave({ $clearButton.BackColor = $colorAccent })
 
-$aboutButton.Add_MouseEnter({ $aboutButton.BackColor = [System.Drawing.Color]::FromArgb(69, 71, 90) })
-$aboutButton.Add_MouseLeave({ $aboutButton.BackColor = $colorPanel })
+$aboutButton.Add_MouseEnter({ $aboutButton.BackColor = [System.Drawing.Color]::FromArgb(63, 63, 70) }) # Zinc-700
+$aboutButton.Add_MouseLeave({ $aboutButton.BackColor = $colorBorder })
 
-$closeButton.Add_MouseEnter({ $closeButton.BackColor = [System.Drawing.Color]::FromArgb(245, 194, 231) }) # Pink hover
+$closeButton.Add_MouseEnter({ $closeButton.BackColor = [System.Drawing.Color]::FromArgb(185, 28, 28) }) # Darker red
 $closeButton.Add_MouseLeave({ $closeButton.BackColor = $colorError })
 
 # Click Actions
@@ -365,7 +368,7 @@ $clearButton.Add_Click({
     Clear-SystemCache
     
     Write-Log "=== PEMBERSIHAN SELESAI ===" $colorSuccess
-    $statusLabel.Text = "Status: Selesai $symCheck"
+    $statusLabel.Text = "Status: Selesai"
     $statusLabel.ForeColor = $colorSuccess
 })
 
@@ -385,13 +388,13 @@ $aboutButton.Add_Click({
 # Credit Link Label
 $linkLabel = New-Object System.Windows.Forms.LinkLabel
 $linkLabel.Text = "Made by Ncah | github.com/callmencah/CleanCache"
-$linkLabel.Location = New-Object System.Drawing.Point(20, 550)
+$linkLabel.Location = New-Object System.Drawing.Point(20, 560)
 $linkLabel.Size = New-Object System.Drawing.Size(445, 20)
 $linkLabel.TextAlign = "MiddleCenter"
-$linkLabel.LinkColor = $colorAccent
-$linkLabel.ActiveLinkColor = $colorSuccess
-$linkLabel.VisitedLinkColor = $colorAccent
-$linkLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$linkLabel.LinkColor = $colorSubtext
+$linkLabel.ActiveLinkColor = $colorAccent
+$linkLabel.VisitedLinkColor = $colorSubtext
+$linkLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
 $linkLabel.LinkBehavior = [System.Windows.Forms.LinkBehavior]::HoverUnderline
 $linkLabel.Links.Add(15, 30, "https://github.com/callmencah/CleanCache")
 $linkLabel.Add_LinkClicked({
