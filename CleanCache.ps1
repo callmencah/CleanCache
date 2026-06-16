@@ -179,12 +179,44 @@ function Write-Log {
     $logBox.ScrollToCaret()
 }
 
+# Size Helper functions
+function Get-PathSize {
+    param([string]$path)
+    if (-not (Test-Path $path)) { return 0 }
+    $size = 0
+    try {
+        $files = Get-ChildItem -Path $path -Recurse -File -ErrorAction SilentlyContinue
+        if ($files) {
+            $size = ($files | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+        }
+    } catch {}
+    return [double]$size
+}
+
+function Format-Size {
+    param([double]$sizeInBytes)
+    if ($sizeInBytes -ge 1GB) {
+        return "{0:N2} GB" -f ($sizeInBytes / 1GB)
+    }
+    if ($sizeInBytes -ge 1MB) {
+        return "{0:N2} MB" -f ($sizeInBytes / 1MB)
+    }
+    if ($sizeInBytes -ge 1KB) {
+        return "{0:N2} KB" -f ($sizeInBytes / 1KB)
+    }
+    if ($sizeInBytes -gt 0) {
+        return "{0} Bytes" -f $sizeInBytes
+    }
+    return "0 KB"
+}
+
 # Function untuk clear cache
 function Clear-BrowserCache {
     param($browserName, $paths)
     Write-Log "=== Membersihkan $browserName ===`n" $colorAccent
     
     $browserFound = $false
+    $cleanedSize = [double]0
     
     switch ($browserName) {
         "Firefox" {
@@ -198,9 +230,11 @@ function Clear-BrowserCache {
                     $browserFound = $true
                     $cachePath = "$env:LOCALAPPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\cache2"
                     if (Test-Path $cachePath) {
+                        $size = Get-PathSize $cachePath
                         try {
                             Remove-Item -Path "$cachePath\*" -Recurse -Force -ErrorAction SilentlyContinue
-                            Write-Log "Cache Firefox dibersihkan`n" $colorSuccess
+                            $cleanedSize += $size
+                            Write-Log "Cache Firefox dibersihkan ($(Format-Size $size))`n" $colorSuccess
                         } catch {
                             Write-Log "Gagal membersihkan Cache Firefox`n" $colorWarning
                         }
@@ -210,10 +244,12 @@ function Clear-BrowserCache {
                     
                     $sessionPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore.jsonlz4"
                     if (Test-Path $sessionPath) {
+                        $size = Get-PathSize $sessionPath
                         try {
                             $backupPath = "$env:APPDATA\Mozilla\Firefox\Profiles\$($profile.Name)\sessionstore_backup.jsonlz4"
                             Copy-Item $sessionPath $backupPath -Force -ErrorAction SilentlyContinue
-                            Write-Log "Session Firefox dibackup`n" $colorSuccess
+                            $cleanedSize += $size
+                            Write-Log "Session Firefox dibackup ($(Format-Size $size))`n" $colorSuccess
                         } catch {}
                     }
                 }
@@ -223,12 +259,14 @@ function Clear-BrowserCache {
             # Chrome, Edge, Opera, Brave
             if (Test-Path $paths.Path) {
                 $browserFound = $true
+                $size = Get-PathSize $paths.Path
                 try {
                     $filesBefore = (Get-ChildItem -Path $paths.Path -Recurse -ErrorAction SilentlyContinue).Count
                     Remove-Item -Path "$($paths.Path)\*" -Recurse -Force -ErrorAction SilentlyContinue
                     $filesAfter = (Get-ChildItem -Path $paths.Path -Recurse -ErrorAction SilentlyContinue).Count
                     if ($filesAfter -eq 0 -or $filesAfter -lt $filesBefore) {
-                        Write-Log "Cache $browserName dibersihkan`n" $colorSuccess
+                        $cleanedSize += $size
+                        Write-Log "Cache $browserName dibersihkan ($(Format-Size $size))`n" $colorSuccess
                     } else {
                         Write-Log "Cache $browserName tidak dapat dibersihkan sepenuhnya (tutup browser Anda)`n" $colorWarning
                     }
@@ -239,9 +277,11 @@ function Clear-BrowserCache {
             # Session storage
             if (Test-Path $paths.SessionPath) {
                 $browserFound = $true
+                $size = Get-PathSize $paths.SessionPath
                 try {
                     Remove-Item -Path "$($paths.SessionPath)\*" -Recurse -Force -ErrorAction SilentlyContinue
-                    Write-Log "Session Storage $browserName dibersihkan`n" $colorSuccess
+                    $cleanedSize += $size
+                    Write-Log "Session Storage $browserName dibersihkan ($(Format-Size $size))`n" $colorSuccess
                 } catch {
                     Write-Log "Gagal membersihkan Session Storage $browserName`n" $colorWarning
                 }
@@ -249,7 +289,8 @@ function Clear-BrowserCache {
             # Login Data
             if (Test-Path $paths.LoginPath) {
                 $browserFound = $true
-                Write-Log "Login Data $browserName diamankan`n" $colorSuccess
+                $size = Get-PathSize $paths.LoginPath
+                Write-Log "Login Data $browserName diamankan ($(Format-Size $size))`n" $colorSuccess
             }
         }
     }
@@ -258,6 +299,7 @@ function Clear-BrowserCache {
         Write-Log "$browserName tidak ditemukan atau tidak aktif`n" $colorSubtext
     }
     Write-Log "`n"
+    return $cleanedSize
 }
 
 # Clear System Cache function
@@ -268,11 +310,15 @@ function Clear-SystemCache {
         "$env:WINDIR\Temp",
         "$env:USERPROFILE\AppData\Local\Temp"
     )
+    $cleanedSize = [double]0
+    
     foreach ($cache in $systemCaches) {
         if (Test-Path $cache) {
+            $size = Get-PathSize $cache
             try {
                 Remove-Item -Path "$cache\*" -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Log "System Temp ($cache) dibersihkan`n" $colorSuccess
+                $cleanedSize += $size
+                Write-Log "System Temp ($cache) dibersihkan ($(Format-Size $size))`n" $colorSuccess
             } catch {
                 Write-Log "Gagal membersihkan folder temp: $cache`n" $colorWarning
             }
@@ -280,9 +326,11 @@ function Clear-SystemCache {
     }
     # Clear Windows Prefetch
     if (Test-Path "$env:WINDIR\Prefetch") {
+        $size = Get-PathSize "$env:WINDIR\Prefetch"
         try {
             Remove-Item -Path "$env:WINDIR\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log "Windows Prefetch dibersihkan`n" $colorSuccess
+            $cleanedSize += $size
+            Write-Log "Windows Prefetch dibersihkan ($(Format-Size $size))`n" $colorSuccess
         } catch {
             Write-Log "Gagal membersihkan Prefetch (butuh hak Administrator)`n" $colorWarning
         }
@@ -295,6 +343,7 @@ function Clear-SystemCache {
         Write-Log "Gagal membersihkan DNS Cache`n" $colorWarning
     }
     Write-Log "`n"
+    return $cleanedSize
 }
 
 # Bottom Buttons Area
@@ -359,16 +408,19 @@ $clearButton.Add_Click({
         }
     }
     
+    $totalCleaned = [double]0
+    
     # Clear selected browsers
     foreach ($browser in $selectedBrowsers) {
-        Clear-BrowserCache -browserName $browser -paths $browsers[$browser]
+        $totalCleaned += Clear-BrowserCache -browserName $browser -paths $browsers[$browser]
     }
     
     # Clear system
-    Clear-SystemCache
+    $totalCleaned += Clear-SystemCache
     
-    Write-Log "=== PEMBERSIHAN SELESAI ===" $colorSuccess
-    $statusLabel.Text = "Status: Selesai"
+    Write-Log "=== PEMBERSIHAN SELESAI ===`n" $colorSuccess
+    Write-Log "Total Ruang Dibebaskan: $(Format-Size $totalCleaned)`n" $colorSuccess
+    $statusLabel.Text = "Status: Selesai (Dibebaskan: $(Format-Size $totalCleaned))"
     $statusLabel.ForeColor = $colorSuccess
 })
 
@@ -401,6 +453,12 @@ $linkLabel.Add_LinkClicked({
     [System.Diagnostics.Process]::Start("https://github.com/callmencah/CleanCache")
 })
 $form.Controls.Add($linkLabel)
+
+# Center Link Label on Form Load (Avoids any DPI or scaling text clipping)
+$linkLabel.AutoSize = $true
+$form.Add_Load({
+    $linkLabel.Left = ($form.ClientSize.Width - $linkLabel.Width) / 2
+})
 
 # Show Dialog
 $form.ShowDialog()
