@@ -443,12 +443,20 @@ $linkLabel.Text = "Made by Ncah | github.com/callmencah/CleanCache"
 $linkLabel.Location = New-Object System.Drawing.Point(20, 560)
 $linkLabel.Size = New-Object System.Drawing.Size(445, 20)
 $linkLabel.TextAlign = "MiddleCenter"
-$linkLabel.LinkColor = $colorSubtext
-$linkLabel.ActiveLinkColor = $colorAccent
-$linkLabel.VisitedLinkColor = $colorSubtext
+$linkLabel.ForeColor = $colorSubtext
+$linkLabel.LinkColor = $colorAccent
+$linkLabel.ActiveLinkColor = $colorSuccess
+$linkLabel.VisitedLinkColor = $colorAccent
 $linkLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
 $linkLabel.LinkBehavior = [System.Windows.Forms.LinkBehavior]::HoverUnderline
-$linkLabel.Links.Add(15, 30, "https://github.com/callmencah/CleanCache")
+
+# Dynamically calculate link position to prevent mismatch
+$linkPart = "github.com/callmencah/CleanCache"
+$linkStart = $linkLabel.Text.IndexOf($linkPart)
+if ($linkStart -ge 0) {
+    $linkLabel.Links.Add($linkStart, $linkPart.Length, "https://github.com/callmencah/CleanCache")
+}
+
 $linkLabel.Add_LinkClicked({
     [System.Diagnostics.Process]::Start("https://github.com/callmencah/CleanCache")
 })
