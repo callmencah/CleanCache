@@ -23,8 +23,8 @@ Made by **Ncah** | Repository: [github.com/callmencah/CleanCache](https://github
 2. Jalankan `setup.bat` sebagai Administrator
 3. Shortcut akan muncul di desktop
 
-Atau jalankan langsung:
+Atau jalankan langsung (buka PowerShell, masuk ke folder repository ini terlebih dahulu menggunakan perintah `cd`, lalu jalankan):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File CleanCache.ps1
+powershell -ExecutionPolicy Bypass -File .\CleanCache.ps1
 ```
