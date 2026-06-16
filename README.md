@@ -8,9 +8,9 @@ Made by **Ncah** | Repository: [github.com/callmencah/CleanCache](https://github
 
 - **5 Browser Support**: Chrome, Edge, Firefox, Opera, Brave
 - **Aman**: Session login tidak terhapus
-- **System Cache**: Membersihkan temp, prefetch, dan DNS cache
+- **System Cache & Recycle Bin**: Membersihkan temp, prefetch, DNS cache, serta mengosongkan Recycle Bin secara aman
 - **GUI Interaktif**: Mudah digunakan dengan antarmuka visual
-- **Log Real-time**: Melihat proses pembersihan berlangsung
+- **Log Real-time**: Melihat proses pembersihan beserta ukuran file yang dihapus secara real-time
 
 ## 📋 Persyaratan
 
